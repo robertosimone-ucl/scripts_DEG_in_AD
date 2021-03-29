@@ -1,0 +1,153 @@
+---
+title: "Mathys analysis"
+author: "Natalia Barahona Torres"
+date: "29/3/2021"
+output: html_document
+---
+
+```{r, warning=FALSE}
+library(readxl)
+library(here)
+
+#Target genes
+targetgenes <- read.csv(paste0(here(), "/targetgenes.csv"), na.strings="", stringsAsFactors=FALSE)
+length(targetgenes$ENS)
+
+targetgenes <- targetgenes[!is.na(targetgenes$HGNC),]
+head(targetgenes)
+
+#Astrocytes
+
+Astrocytes_nopathology_vs_pathology <- read_excel(paste0(here(), "/data/Mathys/Astrocytes_nopathology_vs_pathology.xlsx"))
+Astrocytes_nopathology_vs_pathology <- as.data.frame(Astrocytes_nopathology_vs_pathology)
+rownames(Astrocytes_nopathology_vs_pathology) <- Astrocytes_nopathology_vs_pathology$...1
+Astrocytes_nopathology_vs_pathology$...1 <- NULL
+head(Astrocytes_nopathology_vs_pathology)
+
+Astrocytes <- Astrocytes_nopathology_vs_pathology[Astrocytes_nopathology_vs_pathology$DEGs.Ind.Model==TRUE & Astrocytes_nopathology_vs_pathology$DEGs.Ind.Mix.models==TRUE,]
+table(abs(Astrocytes$IndModel.FC) > 0.25)
+
+Astrocytes$GeneList <- rownames(Astrocytes) %in% targetgenes$HGNC
+
+table(Astrocytes$GeneList)
+
+Astrocytes <- Astrocytes[Astrocytes$GeneList==TRUE,]
+dim(Astrocytes)
+head(Astrocytes)
+
+#Excitatory
+Excitatory_nopathology_vs_pathology <- read_excel(paste0(here(), "/data/Mathys/Excitatory_nopathology_vs_pathology.xlsx"))
+Excitatory_nopathology_vs_pathology <- as.data.frame(Excitatory_nopathology_vs_pathology)
+rownames(Excitatory_nopathology_vs_pathology) <- Excitatory_nopathology_vs_pathology$...1
+Excitatory_nopathology_vs_pathology$...1 <- NULL
+head(Excitatory_nopathology_vs_pathology)
+
+Excitatory <- Excitatory_nopathology_vs_pathology[Excitatory_nopathology_vs_pathology$DEGs.Ind.Model==TRUE & Excitatory_nopathology_vs_pathology$DEGs.Ind.Mix.models==TRUE,]
+table(abs(Excitatory$IndModel.FC) > 0.25)
+
+Excitatory$GeneList <- rownames(Excitatory) %in% targetgenes$HGNC
+
+table(Excitatory$GeneList)
+
+Excitatory <- Excitatory[Excitatory$GeneList==TRUE,]
+dim(Excitatory)
+head(Excitatory)
+
+#Inhibitory
+Inhibitory_nopathology_vs_pathology <- read_excel(paste0(here(), "/data/Mathys/Inhibitory_nopathology_vs_pathology.xlsx"))
+Inhibitory_nopathology_vs_pathology <- as.data.frame(Inhibitory_nopathology_vs_pathology)
+rownames(Inhibitory_nopathology_vs_pathology) <- Inhibitory_nopathology_vs_pathology$...1
+Inhibitory_nopathology_vs_pathology$...1 <- NULL
+head(Inhibitory_nopathology_vs_pathology)
+
+Inhibitory <- Inhibitory_nopathology_vs_pathology[Inhibitory_nopathology_vs_pathology$DEGs.Ind.Model==TRUE & Inhibitory_nopathology_vs_pathology$DEGs.Ind.Mix.models==TRUE,]
+table(abs(Inhibitory$IndModel.FC) > 0.25)
+
+Inhibitory$GeneList <- rownames(Inhibitory) %in% targetgenes$HGNC
+
+table(Inhibitory$GeneList)
+
+Inhibitory <- Inhibitory[Inhibitory$GeneList==TRUE,]
+dim(Inhibitory)
+head(Inhibitory)
+
+#Microglia
+Microglia_nopathology_vs_pathology <- read_excel(paste0(here(), "/data/Mathys/Microglia_nopathology_vs_pathology.xlsx"))
+Microglia_nopathology_vs_pathology <- as.data.frame(Microglia_nopathology_vs_pathology)
+rownames(Microglia_nopathology_vs_pathology) <- Microglia_nopathology_vs_pathology$...1
+Microglia_nopathology_vs_pathology$...1 <- NULL
+head(Microglia_nopathology_vs_pathology)
+
+Microglia <- Microglia_nopathology_vs_pathology[Microglia_nopathology_vs_pathology$DEGs.Ind.Model==TRUE & Microglia_nopathology_vs_pathology$DEGs.Ind.Mix.models==TRUE,]
+table(abs(Microglia$IndModel.FC) > 0.25)
+
+Microglia$GeneList <- rownames(Microglia) %in% targetgenes$HGNC
+
+table(Microglia$GeneList)
+
+Microglia <- Microglia[Microglia$GeneList==TRUE,]
+dim(Microglia)
+head(Microglia)
+
+#Oligodendrocytes
+Oligodendrocytes_nopathology_vs_pathology <- read_excel(paste0(here(), "/data/Mathys/Oligodendrocytes_nopathology_vs_pathology.xlsx"))
+Oligodendrocytes_nopathology_vs_pathology <- as.data.frame(Oligodendrocytes_nopathology_vs_pathology)
+rownames(Oligodendrocytes_nopathology_vs_pathology) <- Oligodendrocytes_nopathology_vs_pathology$...1
+Oligodendrocytes_nopathology_vs_pathology$...1 <- NULL
+head(Oligodendrocytes_nopathology_vs_pathology)
+
+Oligodendrocytes <- Oligodendrocytes_nopathology_vs_pathology[Oligodendrocytes_nopathology_vs_pathology$DEGs.Ind.Model==TRUE & Oligodendrocytes_nopathology_vs_pathology$DEGs.Ind.Mix.models==TRUE,]
+table(abs(Oligodendrocytes$IndModel.FC) > 0.25)
+
+Oligodendrocytes$GeneList <- rownames(Oligodendrocytes) %in% targetgenes$HGNC
+
+table(Oligodendrocytes$GeneList)
+
+Oligodendrocytes <- Oligodendrocytes[Oligodendrocytes$GeneList==TRUE,]
+dim(Oligodendrocytes)
+head(Oligodendrocytes)
+
+#Oligo_pc
+Oligo_pc_nopathology_vs_pathology <- read_excel(paste0(here(), "/data/Mathys/Oligodendrocytes_progenitor_cell_nopathology_vs_pathology.xlsx"))
+Oligo_pc_nopathology_vs_pathology <- as.data.frame(Oligo_pc_nopathology_vs_pathology)
+rownames(Oligo_pc_nopathology_vs_pathology) <- Oligo_pc_nopathology_vs_pathology$...1
+Oligo_pc_nopathology_vs_pathology$...1 <- NULL
+head(Oligo_pc_nopathology_vs_pathology)
+
+Oligo_pc <- Oligo_pc_nopathology_vs_pathology[Oligo_pc_nopathology_vs_pathology$DEGs.Ind.Model==TRUE & Oligo_pc_nopathology_vs_pathology$DEGs.Ind.Mix.models==TRUE,]
+table(abs(Oligo_pc$IndModel.FC) > 0.25)
+
+Oligo_pc$GeneList <- rownames(Oligo_pc) %in% targetgenes$HGNC
+
+table(Oligo_pc$GeneList)
+
+Oligo_pc <- Oligo_pc[Oligo_pc$GeneList==TRUE,]
+dim(Oligo_pc)
+head(Oligo_pc)
+
+#Merge
+
+totalgenes <- c(rownames(Astrocytes), rownames(Excitatory), rownames(Inhibitory), rownames(Microglia), rownames(Oligodendrocytes), rownames(Oligo_pc))
+length(totalgenes)
+
+totalgenes <- unique(totalgenes)
+length(totalgenes)
+
+Mathys_results <- data.frame(
+  Gene = totalgenes
+)
+
+Mathys_results$Astrocytes <- Astrocytes$IndModel.FC[match(Mathys_results$Gene, rownames(Astrocytes))]
+Mathys_results$Excitatory <- Excitatory$IndModel.FC[match(Mathys_results$Gene, rownames(Excitatory))]
+Mathys_results$Inhibitory <- Inhibitory$IndModel.FC[match(Mathys_results$Gene, rownames(Inhibitory))]
+Mathys_results$Microglia <- Microglia$IndModel.FC[match(Mathys_results$Gene, rownames(Microglia))]
+Mathys_results$Oligodendrocytes <- Oligodendrocytes$IndModel.FC[match(Mathys_results$Gene, rownames(Oligodendrocytes))]
+Mathys_results$Oligo_pc <- Oligo_pc$IndModel.FC[match(Mathys_results$Gene, rownames(Oligo_pc))]
+
+Mathys_results$ENS <- targetgenes$ENSEMBL[match(Mathys_results$Gene, targetgenes$HGNC)]
+
+table(Mathys_results$Gene %in% targetgenes$HGNC)
+
+write.csv(Mathys_results, paste0(here(), "/Mathys_results.csv"), row.names=F)
+
+```

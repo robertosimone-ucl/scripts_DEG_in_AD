@@ -1,0 +1,49 @@
+---
+title: "Get Gene IDs"
+author: "Natalia Barahona Torres"
+date: "29/3/2021"
+output: html_document
+---
+
+```{r}
+library(readxl)
+library(biomaRt)
+library(here)
+
+LIST <- read_excel(paste0(here(), "/data/LIST of S-AS gene pairs_Roberto S.xlsx"))
+LIST <- as.data.frame(LIST)
+head(LIST)
+
+LIST$lnc <- substring(LIST$lnc, 2)
+LIST$lnc <- gsub("\\..*","", LIST$lnc)
+head(LIST)
+
+allgenes <- c(LIST$Gene_Target_ENS, LIST$lnc)
+length(allgenes)
+allgenes <- unique(allgenes)
+length(allgenes)
+
+ensembl=useMart("ensembl")
+ensembl = useDataset("hsapiens_gene_ensembl",mart=ensembl)
+gene_info <- getBM(attributes = c("ensembl_gene_id", "gene_biotype", "hgnc_symbol"), filters="ensembl_gene_id" ,values=allgenes, mart=ensembl)
+
+table(gene_info$gene_biotype)
+
+targetgenes <- gene_info[gene_info$gene_biotype=="protein_coding",]
+targetgenes$gene_biotype <- NULL
+names(targetgenes) <- c("ENSEMBL", "HGNC")
+head(targetgenes)
+length(targetgenes$ENSEMBL)
+length(unique(targetgenes$ENSEMBL))
+
+targetlnc <- gene_info[!gene_info$gene_biotype=="protein_coding",]
+targetlnc$gene_biotype <- NULL
+names(targetlnc) <- c("ENSEMBL", "HGNC")
+head(targetlnc)
+length(targetlnc$ENSEMBL)
+length(unique(targetlnc$ENSEMBL))
+
+write.csv(targetgenes, paste0(here(), "/targetgenes.csv"), row.names = F)
+
+write.csv(targetlnc, paste0(here(), "/targetlnc.csv"), row.names = F)
+```

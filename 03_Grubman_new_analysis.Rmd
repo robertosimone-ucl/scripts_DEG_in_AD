@@ -1,0 +1,198 @@
+---
+title: "Grubman analysis"
+author: "Natalia Barahona Torres"
+date: "29/3/2021"
+output: html_document
+---
+
+```{r}
+library(readxl)
+library(here)
+
+#Target genes
+targetgenes <- read.csv(paste0(here(), "/targetgenes.csv"), na.strings="", stringsAsFactors=FALSE)
+length(targetgenes$ENS)
+
+targetgenes <- targetgenes[!is.na(targetgenes$HGNC),]
+
+#Target lnc
+targetlnc <- read.csv(paste0(here(), "/targetlnc.csv"), na.strings="", stringsAsFactors=FALSE)
+length(targetlnc$ENS)
+
+targetlnc <- targetlnc[!is.na(targetlnc$HGNC),]
+
+#Astrocytes
+Astrocytes <- read_excel(paste0(here(), "/data/Grubman/Astrocytes_Grubman_PoloBiorxiv_ADvsCON_based on SamplesLFC0.5FDR0.05.xlsx"))
+Astrocytes <- as.data.frame(Astrocytes)
+table(Astrocytes$`P-value`< 0.05)
+table(abs(Astrocytes$Log2FC) > 0.5)
+
+Astrocytes$GeneList <- Astrocytes$DEGsymbol %in% targetgenes$HGNC
+Astrocytes$LncList <- Astrocytes$DEGsymbol %in% targetlnc$HGNC
+
+table(Astrocytes$GeneList)
+table(Astrocytes$LncList)
+
+Astrocytes <- Astrocytes[Astrocytes$GeneList==TRUE | Astrocytes$LncList==TRUE,]
+
+dim(Astrocytes)
+head(Astrocytes)
+
+#Endothelial
+Endothelial <- read_excel(paste0(here(), "/data/Grubman/Endothelial_Grubman_PoloBiorxiv_ADvsCON_based on SamplesLFC0.5FDR0.05.xlsx"))
+Endothelial <- as.data.frame(Endothelial)
+table(Endothelial$`P-value`< 0.05)
+table(abs(Endothelial$Log2FC) > 0.5)
+
+Endothelial$GeneList <- Endothelial$DEGsymbol %in% targetgenes$HGNC
+Endothelial$LncList <- Endothelial$DEGsymbol %in% targetlnc$HGNC
+
+table(Endothelial$GeneList)
+table(Endothelial$LncList)
+
+Endothelial <- Endothelial[Endothelial$GeneList==TRUE | Endothelial$LncList==TRUE,]
+
+dim(Endothelial)
+head(Endothelial)
+
+#Hybrid
+Hybrid <- read_excel(paste0(here(), "/data/Grubman/Hybrid_Grubman_PoloBiorxiv_ADvsCON_based on SamplesLFC0.5FDR0.05.xlsx"))
+Hybrid <- as.data.frame(Hybrid)
+table(Hybrid$`P-value`< 0.05)
+table(abs(Hybrid$Log2FC) > 0.5)
+
+Hybrid$GeneList <- Hybrid$DEGsymbol %in% targetgenes$HGNC
+Hybrid$LncList <- Hybrid$DEGsymbol %in% targetlnc$HGNC
+
+table(Hybrid$GeneList)
+table(Hybrid$LncList)
+
+Hybrid <- Hybrid[Hybrid$GeneList==TRUE | Hybrid$LncList==TRUE,]
+
+dim(Hybrid)
+head(Hybrid)
+
+#Microglia
+Microglia <- read_excel(paste0(here(), "/data/Grubman/Microglia_Grubman_PoloBiorxiv_ADvsCON_based on SamplesLFC0.5FDR0.05.xlsx"))
+Microglia <- as.data.frame(Microglia)
+table(Microglia$`P-value`< 0.05)
+table(abs(Microglia$Log2FC) > 0.5)
+
+Microglia$GeneList <- Microglia$DEGsymbol %in% targetgenes$HGNC
+Microglia$LncList <- Microglia$DEGsymbol %in% targetlnc$HGNC
+
+table(Microglia$GeneList)
+table(Microglia$LncList)
+
+Microglia <- Microglia[Microglia$GeneList==TRUE | Microglia$LncList==TRUE,]
+
+dim(Microglia)
+head(Microglia)
+
+#Neurons
+Neurons <- read_excel(paste0(here(), "/data/Grubman/Neurons_Grubman_PoloBiorxiv_ADvsCON_based on SamplesLFC0.5FDR0.05.xlsx"))
+Neurons <- as.data.frame(Neurons)
+table(Neurons$`P-value`< 0.05)
+table(abs(Neurons$Log2FC) > 0.5)
+
+Neurons$GeneList <- Neurons$DEGsymbol %in% targetgenes$HGNC
+Neurons$LncList <- Neurons$DEGsymbol %in% targetlnc$HGNC
+
+table(Neurons$GeneList)
+table(Neurons$LncList)
+
+Neurons <- Neurons[Neurons$GeneList==TRUE | Neurons$LncList==TRUE,]
+
+dim(Neurons)
+head(Neurons)
+
+#Oli
+Oli <- read_excel(paste0(here(), "/data/Grubman/Oli_Grubman_PoloBiorxiv_ADvsCON_based on SamplesLFC0.5FDR0.05.xlsx"))
+Oli <- as.data.frame(Oli)
+table(Oli$`P-value`< 0.05)
+table(abs(Oli$Log2FC) > 0.5)
+
+Oli$GeneList <- Oli$DEGsymbol %in% targetgenes$HGNC
+Oli$LncList <- Oli$DEGsymbol %in% targetlnc$HGNC
+
+table(Oli$GeneList)
+table(Oli$LncList)
+
+Oli <- Oli[Oli$GeneList==TRUE | Oli$LncList==TRUE,]
+
+dim(Oli)
+head(Oli)
+
+#OPC
+OPC <- read_excel(paste0(here(), "/data/Grubman/OPC_Grubman_PoloBiorxiv_ADvsCON_based on SamplesLFC0.5FDR0.05.xlsx"))
+OPC <- as.data.frame(OPC)
+table(OPC$`P-value`< 0.05)
+table(abs(OPC$Log2FC) > 0.5)
+
+OPC$GeneList <- OPC$DEGsymbol %in% targetgenes$HGNC
+OPC$LncList <- OPC$DEGsymbol %in% targetlnc$HGNC
+
+table(OPC$GeneList)
+table(OPC$LncList)
+
+OPC <- OPC[OPC$GeneList==TRUE | OPC$LncList==TRUE,]
+
+dim(OPC)
+head(OPC)
+
+#Unidentified
+Unidentified <- read_excel(paste0(here(), "/data/Grubman/Unidentified_Grubman_PoloBiorxiv_ADvsCON_based on SamplesLFC0.5FDR0.05.xlsx"))
+Unidentified <- as.data.frame(Unidentified)
+table(Unidentified$`P-value`< 0.05)
+table(abs(Unidentified$Log2FC) > 0.5)
+
+Unidentified$GeneList <- Unidentified$DEGsymbol %in% targetgenes$HGNC
+Unidentified$LncList <- Unidentified$DEGsymbol %in% targetlnc$HGNC
+
+table(Unidentified$GeneList)
+table(Unidentified$LncList)
+
+Unidentified <- Unidentified[Unidentified$GeneList==TRUE | Unidentified$LncList==TRUE,]
+
+dim(Unidentified)
+head(Unidentified)
+
+#Merging
+
+totalgenes <- c(Astrocytes$DEGsymbol, Endothelial$DEGsymbol, Hybrid$DEGsymbol, Microglia$DEGsymbol, Neurons$DEGsymbol, Oli$DEGsymbol, OPC$DEGsymbol, Unidentified$DEGsymbol)
+length(totalgenes)
+
+totalgenes <- unique(totalgenes)
+length(totalgenes)
+
+Grubman_results = data.frame(
+  Gene=totalgenes
+)
+
+Grubman_results$Astrocytes <- Astrocytes$Log2FC[match(Grubman_results$Gene, Astrocytes$DEGsymbol)]
+Grubman_results$Endothelial <- Endothelial$Log2FC[match(Grubman_results$Gene, Endothelial$DEGsymbol)]
+Grubman_results$Hybrid <- Hybrid$Log2FC[match(Grubman_results$Gene, Hybrid$DEGsymbol)]
+Grubman_results$Microglia <- Microglia$Log2FC[match(Grubman_results$Gene, Microglia$DEGsymbol)]
+Grubman_results$Neurons <- Neurons$Log2FC[match(Grubman_results$Gene, Neurons$DEGsymbol)]
+Grubman_results$Oli <- Oli$Log2FC[match(Grubman_results$Gene, Oli$DEGsymbol)]
+Grubman_results$OPC <- OPC$Log2FC[match(Grubman_results$Gene, OPC$DEGsymbol)]
+Grubman_results$Unidentified <- Unidentified$Log2FC[match(Grubman_results$Gene, Unidentified$DEGsymbol)]
+
+Grubman_results$GeneList <- Grubman_results$Gene %in% targetgenes$HGNC
+Grubman_results$LncList <- Grubman_results$Gene %in% targetlnc$HGNC
+
+totalgenes <- as.data.frame(totalgenes)
+totalgenes$Gene_ENS <- targetgenes$ENSEMBL[match(totalgenes$totalgenes, targetgenes$HGNC)]
+totalgenes$Lnc_ENS <- targetlnc$ENSEMBL[match(totalgenes$totalgenes, targetlnc$HGNC)]
+head(totalgenes)
+
+library(dplyr)
+totalgenes$ENS <- coalesce(totalgenes$Gene_ENS, totalgenes$Lnc_ENS)
+
+head(totalgenes)
+
+Grubman_results$ENS <- totalgenes$ENS[match(Grubman_results$Gene, totalgenes$totalgenes)]
+
+write.csv(Grubman_results, paste0(here(), "/Grubman_final_results.csv"), row.names = F)
+
+```

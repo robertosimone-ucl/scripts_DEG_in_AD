@@ -1,0 +1,130 @@
+---
+title: "GSE95587 analysis"
+author: "Natalia Barahona Torres"
+date: "29/3/2021"
+output: html_document
+---
+
+```{r}
+library(here)
+
+################################################################################
+#TARGET GENES
+targetgenes <- read.csv(paste0(here(), "/targetgenes.csv"), stringsAsFactors=FALSE)
+length(unique(targetgenes$ENS))
+
+#TARGET LNC
+targetlnc <- read.csv(paste0(here(), "/targetlnc.csv"), stringsAsFactors=FALSE)
+length(unique(targetlnc$ENS))
+
+################################################################################
+
+#Read quantification files
+files <- list.files(paste0(here(), "/data/GSE95587/"))
+files <- files[grepl("sample", files)]
+files <- as.data.frame(files)
+files$Sample <- gsub("\\_.*", "", files$files)
+files$files <- paste0(paste0(here(), "/data/GSE95587/"), files$files)
+head(files)
+
+library(edgeR)
+GSE_counts <- readDGE(files, labels = files$Sample, columns = c(1,3), comment.char="#")
+
+#Remove genes that are not expressed across the samples
+dim(GSE_counts)
+head(as.data.frame(GSE_counts$counts)[1:5])
+head(as.data.frame(GSE_counts$samples)[1:5])
+keep <- filterByExpr(GSE_counts)
+table(keep)
+GSE_counts <- GSE_counts[keep,, keep.lib.sizes=FALSE] #Update lib sizes
+dim(GSE_counts)
+head(as.data.frame(GSE_counts$counts)[1:5])
+head(as.data.frame(GSE_counts$samples)[1:5])
+
+#Add patient info
+patient_info <- read.csv(paste0(here(), "/data/GSE95587/patient_info.csv"), stringsAsFactors=FALSE)
+
+GSE_counts$samples$Sample <- NULL
+GSE_counts$samples$group <- NULL
+GSE_counts$samples$Diagnosis <- as.factor(patient_info$Diagnosis[match(rownames(GSE_counts$samples), patient_info$ID)])
+GSE_counts$samples$Sex <- as.factor(patient_info$Sex[match(rownames(GSE_counts$samples), patient_info$ID)])
+GSE_counts$samples$Age <- patient_info$Age[match(rownames(GSE_counts$samples), patient_info$ID)]
+library(gtools)
+GSE_counts$samples$Braak <- as.factor(roman2int(patient_info$Braak[match(rownames(GSE_counts$samples), patient_info$ID)]))
+GSE_counts$samples$RIN <- patient_info$RIN[match(rownames(GSE_counts$samples), patient_info$ID)]
+GSE_counts$samples$PMI <- patient_info$post_mortem_interval[match(rownames(GSE_counts$samples), patient_info$ID)]
+
+head(GSE_counts$samples)
+
+#Add gene info
+
+library(biomaRt)
+ensembl=useMart("ensembl", host="uswest.ensembl.org")
+ensembl = useDataset("hsapiens_gene_ensembl",mart=ensembl)
+gene_info <- getBM(attributes = c("entrezgene_id", "ensembl_gene_id", "gene_biotype", "hgnc_symbol"), filters="entrezgene_id" ,values=rownames(GSE_counts$counts), mart=ensembl)
+all.equal(rownames(GSE_counts$counts), gene_info$entrezgene_id)
+
+GSE_gene_info <- data.frame(
+  "Entrez"=rownames(GSE_counts$counts),
+  "ENS"=gene_info$ensembl_gene_id[match(rownames(GSE_counts$counts), gene_info$entrezgene_id)],
+  "Biotype"=gene_info$gene_biotype[match(rownames(GSE_counts$counts), gene_info$entrezgene_id)],
+  "HGNC"=gene_info$hgnc_symbol[match(rownames(GSE_counts$counts), gene_info$entrezgene_id)]
+)
+
+rownames(GSE_gene_info) <- GSE_gene_info$Entrez
+GSE_gene_info$Entrez <- NULL
+head(GSE_gene_info)
+
+all.equal(rownames(GSE_gene_info), rownames(GSE_counts$counts))
+
+GSE_counts$genes <- GSE_gene_info
+
+#TMM normalisation
+GSE_dge_TMM <- calcNormFactors(GSE_counts, method="TMM")
+
+head(GSE_dge_TMM$samples)
+
+GSE_lcpm <- cpm(GSE_dge_TMM, log=T)
+
+#Covariates
+library(swamp)
+pcres <- prince(as.matrix(GSE_lcpm), GSE_dge_TMM$samples[,c("Sex", "Age", "Braak", "Diagnosis", "RIN", "PMI")])
+prince.plot(prince=pcres)
+
+table(GSE_counts$samples$Diagnosis, GSE_counts$samples$Sex)
+
+plotMDS(GSE_lcpm, col=as.numeric(GSE_dge_TMM$samples$Diagnosis))
+
+#Design matrix
+design <- model.matrix(~0+Diagnosis+RIN+Sex, data=GSE_dge_TMM$samples)
+head(design)
+
+#Limma
+v <- voom(GSE_dge_TMM, design, plot=TRUE)
+
+fit <- lmFit(v, design)
+
+cont.matrix <- makeContrasts(ADvsCON = DiagnosisAD-DiagnosisCON, levels=design)
+head(cont.matrix)
+
+fitcontrasts <- contrasts.fit(fit, cont.matrix)
+efit <- eBayes(fitcontrasts)
+
+summary(decideTests(efit, p.value=0.05, lfc=0.25))
+
+GSE_AD_vs_Control <- topTable(efit, coef="ADvsCON", number=Inf, sort.by="logFC", p.value=0.05, lfc=0.25)
+dim(GSE_AD_vs_Control)
+head(GSE_AD_vs_Control)
+
+GSE_AD_vs_Control$GeneList <- (GSE_AD_vs_Control$ENS %in% targetgenes$ENSEMBL)
+GSE_AD_vs_Control$LncList <- (GSE_AD_vs_Control$ENS %in% targetlnc$ENSEMBL)
+
+table(GSE_AD_vs_Control$GeneList)
+table(GSE_AD_vs_Control$LncList)
+
+head(GSE_AD_vs_Control[GSE_AD_vs_Control$GeneList==TRUE | GSE_AD_vs_Control$LncList==TRUE,])
+tail(GSE_AD_vs_Control[GSE_AD_vs_Control$GeneList==TRUE | GSE_AD_vs_Control$LncList==TRUE,])
+
+write.csv(GSE_AD_vs_Control, paste0(here(), "/GSE_AD_vs_Control_Limma.csv"))
+
+```

@@ -1,0 +1,91 @@
+---
+title: "GSE95587 analysis"
+author: "Natalia Barahona Torres"
+date: "29/3/2021"
+output: html_document
+---
+  
+```{r}
+library(here)
+
+Grubman <- read.csv(paste0(here(), "/Grubman_final_results.csv"), stringsAsFactors=FALSE)
+Mathys <- read.csv(paste0(here(), "/Mathys_results.csv"), stringsAsFactors=FALSE)
+GSE <- read.csv(paste0(here(), "/outputs/GSE_AD_vs_Control_Limma_annotated.csv"), stringsAsFactors=FALSE)
+table(GSE$adj.P.Val < 0.05)
+
+Grubman$GeneList <- NULL
+Grubman$LncList <- NULL
+rownames(Grubman) <- Grubman$ENS
+Grubman$ENS <- NULL
+colnames(Grubman) <- paste0(colnames(Grubman), ".G")
+head(Grubman)
+
+targetgenes <- read.csv(paste0(here(), "/targetgenes.csv"), stringsAsFactors=FALSE)
+targetlnc <- read.csv(paste0(here(), "/targetlnc.csv"), stringsAsFactors=FALSE)
+table(GSE$GeneList)
+table(GSE$LncList)
+
+GSE$GeneList <- GSE$ENS %in% targetgenes$ENSEMBL
+GSE$LncList <- GSE$ENS %in% targetlnc$ENSEMBL
+
+table(GSE$GeneList)
+table(GSE$LncList)
+
+GSE <- GSE[GSE$GeneList==TRUE | GSE$LncList==TRUE,]
+write.csv(GSE, paste0(here(), "/GSE_AD_vs_Control_Limma_annotated_filtered.csv"), row.names = F)
+
+dim(GSE)
+table(GSE$logFC>0)
+prop.table(table(GSE$logFC>0))
+
+GSE$GeneList <- NULL
+GSE$LncList <- NULL
+GSE$Entrez <- NULL
+GSE$Biotype <- NULL
+GSE$AveExpr <- NULL
+GSE$t <- NULL
+GSE$P.Value <- NULL
+GSE$adj.P.Val <- NULL
+GSE$B <- NULL
+rownames(GSE) <- GSE$ENS
+GSE$ENS <- NULL
+colnames(GSE) <- c("Gene.GSE", "GSE95587")
+head(GSE)
+
+rownames(Mathys) <- Mathys$ENS
+Mathys$ENS <- NULL
+colnames(Mathys) <- paste0(colnames(Mathys), ".M")
+head(Mathys)
+
+combined <- merge(Mathys, Grubman, by=0, all=TRUE) #By row names
+rownames(combined) <- combined$Row.names
+combined$Row.names <- NULL
+
+combined <- merge(combined, GSE, by=0, all=TRUE)
+
+rownames(combined) <- combined$Row.names
+combined$Row.names <- NULL
+head(combined)
+
+library(dplyr)
+combined$Gene <- coalesce(combined$Gene.M, combined$Gene.G, combined$Gene.GSE)
+combined$Gene.M <- NULL
+combined$Gene.G <- NULL
+combined$Gene.GSE <- NULL
+
+#Add annotations
+library(readxl)
+anno <- read_xlsx(paste0(here(), "/data/anno.xlsx"))
+anno <- as.data.frame(anno)
+
+combined$Biotype <- anno$Biotype[match(combined$Gene, anno$name)]
+combined$MIR <- anno$MIR[match(combined$Gene, anno$name)]
+combined$overlap <- anno$overlap[match(combined$Gene, anno$name)]
+combined$disease <- anno$disease[match(combined$Gene, anno$name)]
+combined$disorder <- anno$disorder[match(combined$Gene, anno$name)]
+combined$degree <- anno$degree[match(combined$Gene, anno$name)]
+
+head(combined)
+
+write.csv(combined, paste0(here(), "combined_new.csv"))
+```
